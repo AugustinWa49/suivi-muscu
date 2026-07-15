@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -65,7 +66,7 @@
 </style>
 </head>
 <body>
-
+ 
 <header>
   <div>
     <div class="eyebrow">Carnet d'entraînement</div>
@@ -73,14 +74,14 @@
   </div>
   <button class="btn btn-accent" onclick="openNewSession()">+ Nouvelle séance</button>
 </header>
-
+ 
 <nav class="tabs">
   <button id="tab-journal" class="tab tab-on" onclick="setView('journal')">Journal</button>
   <button id="tab-progression" class="tab" onclick="setView('progression')">Progression</button>
 </nav>
-
+ 
 <div id="view-journal"></div>
-
+ 
 <div id="view-progression" class="hidden">
   <div class="pills" id="exo-pills"></div>
   <div class="card">
@@ -89,7 +90,7 @@
     <p class="muted" id="volume-note" style="font-size:12px; margin-top:8px;"></p>
   </div>
 </div>
-
+ 
 <div id="modal" class="overlay hidden">
   <div class="card modal">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -111,7 +112,7 @@
     </div>
   </div>
 </div>
-
+ 
 <script>
 /* ---------------- données ---------------- */
 const KEY = 'gym-sessions';
@@ -127,12 +128,12 @@ const SEED = [
     {name:'Curl biceps', weight:10, reps:10, sets:4},
     {name:'Curl prise marteau', weight:12, reps:10, sets:4}]},
 ];
-
+ 
 let sessions = load();
 let editingId = null;
 let selectedExo = null;
 let chart = null;
-
+ 
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
@@ -140,13 +141,13 @@ function load() {
   } catch { return SEED.slice(); }
 }
 function persist() { try { localStorage.setItem(KEY, JSON.stringify(sessions)); } catch(e){ console.error(e); } }
-
+ 
 const norm = s => s.trim().toLowerCase();
 const sorted = () => [...sessions].sort((a,b) => a.date.localeCompare(b.date));
 const fmtDate = iso => new Date(iso+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
 const fmtShort = iso => new Date(iso+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
 const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
+ 
 function computeDeltas() {
   const last = {}, map = {};
   for (const s of sorted()) for (const ex of s.exercises) {
@@ -164,7 +165,7 @@ function exoNames() {
   }
   return Object.values(seen);
 }
-
+ 
 /* ---------------- vues ---------------- */
 function setView(v) {
   document.getElementById('view-journal').classList.toggle('hidden', v!=='journal');
@@ -173,7 +174,7 @@ function setView(v) {
   document.getElementById('tab-progression').classList.toggle('tab-on', v==='progression');
   if (v==='progression') renderProgression();
 }
-
+ 
 function renderJournal() {
   const deltas = computeDeltas();
   const el = document.getElementById('view-journal');
@@ -204,31 +205,31 @@ function renderJournal() {
       </ul>
     </div>`).join('');
 }
-
+ 
 function renderProgression() {
   const names = exoNames();
   if (!selectedExo || !names.some(n => norm(n)===norm(selectedExo))) selectedExo = names[0] || null;
   document.getElementById('exo-pills').innerHTML = names.map(n =>
     `<button class="pill ${norm(n)===norm(selectedExo||'')?'pill-on':''}" onclick="selectExo('${esc(n).replace(/'/g,"\\'")}')">${esc(n)}</button>`
   ).join('');
-
+ 
   const k = norm(selectedExo || '');
   const data = sorted().map(s => {
     const ex = s.exercises.find(e => norm(e.name)===k);
     return ex ? { date: fmtShort(s.date), poids: ex.weight, volume: ex.weight*ex.reps*ex.sets } : null;
   }).filter(Boolean);
-
+ 
   const statsEl = document.getElementById('stats');
   const noteEl = document.getElementById('volume-note');
   if (!data.length) { statsEl.innerHTML=''; noteEl.textContent='Pas encore de données.'; if(chart){chart.destroy();chart=null;} return; }
-
+ 
   const first = data[0].poids, lastW = data[data.length-1].poids, diff = lastW - first;
   statsEl.innerHTML = `
     <div class="stat"><div class="eyebrow" style="font-size:10px;">Départ</div><b>${first} kg</b></div>
     <div class="stat"><div class="eyebrow" style="font-size:10px;">Actuel</div><b style="color:#e8c15a;">${lastW} kg</b></div>
     <div class="stat"><div class="eyebrow" style="font-size:10px;">Progression</div><b style="color:${diff>0?'#5fb86a':diff<0?'#d64533':'#e8e6e0'};">${diff>=0?'+':''}${diff} kg</b></div>`;
   noteEl.innerHTML = `Poids soulevé par séance — volume total dernière séance : <b style="color:#e8e6e0;">${data[data.length-1].volume} kg</b> (poids × rép × séries)`;
-
+ 
   if (chart) chart.destroy();
   chart = new Chart(document.getElementById('chart'), {
     type: 'line',
@@ -253,7 +254,7 @@ function renderProgression() {
   });
 }
 function selectExo(n) { selectedExo = n; renderProgression(); }
-
+ 
 /* ---------------- formulaire ---------------- */
 function rowHTML(ex) {
   return `<div class="form-row">
@@ -308,7 +309,7 @@ function removeSession(id) {
   sessions = sessions.filter(s => s.id!==id);
   persist(); renderJournal();
 }
-
+ 
 /* ---------------- init + PWA ---------------- */
 renderJournal();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
